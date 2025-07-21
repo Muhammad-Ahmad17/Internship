@@ -1,12 +1,12 @@
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-    secure: true, // use TLS
-    host: 'smtp.gmail.com', // or your email provider's SMTP server
-    port: 465, // usually 465 for secure SMTP
+    secure: true, 
+    host: 'smtp.gmail.com', 
+    port: 465, 
     auth: {
-        user: process.env.EMAIL_USER, // your email
-        pass: process.env.EMAIL_PASS  // your app password (not real password!)
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS  
     }
 });
 
@@ -18,6 +18,7 @@ exports.sendEmail = async (to, subject, text) => {
             subject,
             text
         };
+        // transporter.sendMail(mailOptions);
         const info = await transporter.sendMail(mailOptions);
         console.log('Email sent: ' + info.response);
     } catch (error) { 

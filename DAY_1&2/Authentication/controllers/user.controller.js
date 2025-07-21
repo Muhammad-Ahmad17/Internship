@@ -1,14 +1,14 @@
 const User = require('../models/user.model');
 const { sendEmail } = require('../services/mail.service');
-
-const bcrypt = require('bcryptjs'); 
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const axios= require ('axios'); 
+const axios = require('axios');
 
 
-exports.registerUser = async (req,res) => {
+exports.registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, balance } = req.body;
         // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
@@ -17,22 +17,22 @@ exports.registerUser = async (req,res) => {
         // Hash the password 
         const hashedPassword = await bcrypt.hash(password, 10);
         // Create a new user
-        const user = new User({ name, email, password: hashedPassword });
+        const user = new User({ name, email, password: hashedPassword , balance });
         await user.save();
-        // ✅ Trigger other action (e.g., send email)
+        // Trigger other action (e.g., send email)
         await axios.post('http://localhost:5000/api/users/send-welcome-email', {
             email,
             name,
-            });    
-                
-res.status(201).json({
-  message: 'User registered successfully',
-  user: {
-    name: user.name,
-    email: user.email,
-    password: user.password 
-  }
-});
+        });
+        res.status(201).json({
+            message: 'User registered successfully',
+            user: {
+                name: user.name,
+                email: user.email,
+                password: user.password,
+                balance: user.balance
+            }
+        });
 
     } catch (error) {
         console.error('Error registering user:', error);
@@ -71,7 +71,7 @@ exports.userProfile = async (req, res) => {
     }
 }
 
-exports.userLocation = async (req,res) => {
+exports.userLocation = async (req, res) => {
     // Fetch the user's IP address
     // Use a third-party service to get the location based on IP
     const ipResponse = await axios.get('https://api.ipify.org?format=json')
@@ -98,4 +98,50 @@ exports.sendWelcomeEmail = async (req, res) => {
     }
 };
 
+exports.sendMoney = async (req, res) => {
+  const { amount, recipientEmail } = req.body;
 
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    // 1. Find sender
+    const sender = await User.findById(req.user.id).session(session);
+    if (!sender) {
+      await session.abortTransaction();
+      return res.status(404).json({ message: 'Sender not found' });
+    }
+
+    // 2. Find recipient
+    const recipient = await User.findOne({ email: recipientEmail }).session(session);
+    if (!recipient) {
+      await session.abortTransaction();
+      return res.status(404).json({ message: 'Recipient not found' });
+    }
+
+    // 3. Check sender balance
+    if (sender.balance < amount) {
+      await session.abortTransaction();
+      return res.status(400).json({ message: 'Insufficient balance' });
+    }
+
+    // 4. Perform the updates
+    sender.balance -= amount;
+    recipient.balance += amount;
+
+    await sender.save({ session });
+    await recipient.save({ session });
+
+    // 5. Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    res.json({ message: 'Money sent successfully' });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error('Transaction error:', error);
+    res.status(500).json({ message: 'Failed to send money' });
+  }
+};
