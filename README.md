@@ -84,12 +84,34 @@ This repository contains my daily learning logs, code implementations, and backe
 
 ### **Day 7**
 
-* **Real-Time Chat App with Socket.IO**:
+#### **Real-Time Chat App with Socket.IO**
 
-  * Built a basic real-time chat system using **Socket.IO**
-  * Backend event listeners: `io.on('connection')`, `socket.on('message')`
-  * Emitted broadcast messages to all connected clients
-  * Understood transport protocols (WebSocket vs HTTP polling)
+* Built a basic real-time chat system using **Socket.IO**
+* Used backend event listeners:
+
+  * `io.on('connection', ...)` to handle new user connections
+  * `socket.on('message', ...)` to receive chat messages from clients
+* Understood transport protocols (WebSocket vs HTTP long polling)
+
+#### **WhatsApp Chatbot using whatsapp-web.js**
+
+* Implemented a basic **WhatsApp bot** using `whatsapp-web.js`
+* Initialized client with `LocalAuth` and Puppeteer for session persistence
+* Generated QR code for authentication directly in the terminal
+* Listened for incoming messages using `client.on('message', ...)`
+* Replied with preset responses based on message content
+* Scheduled automatic replies using `node-cron`
+
+
+### **Day 8**
+
+ **Socket.IO - Custom Rooms Implementation**
+
+  * Implemented dynamic room joining using `socket.join(roomId)`
+  * Added support for broadcasting messages within a specific room via `socket.to(roomId).emit(...)`
+  * Used `socket.on("join_room", roomId => {...})` to handle room-based connections
+  * Ensured that only room members receive targeted events/messages
+  * Verified room isolation and message delivery through client-side listeners
 
 ---
 ##  Tech Stack
