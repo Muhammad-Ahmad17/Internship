@@ -103,15 +103,20 @@ This repository contains my daily learning logs, code implementations, and backe
 * Scheduled automatic replies using `node-cron`
 
 
-### **Day 8**
+### **Day 8-9**
 
- **Socket.IO - Custom Rooms Implementation**
+### **Socket.IO – Full-Stack Room-Based Chat Flow (No DB)**
 
-  * Implemented dynamic room joining using `socket.join(roomId)`
-  * Added support for broadcasting messages within a specific room via `socket.to(roomId).emit(...)`
-  * Used `socket.on("join_room", roomId => {...})` to handle room-based connections
-  * Ensured that only room members receive targeted events/messages
-  * Verified room isolation and message delivery through client-side listeners
+* Built a complete real-time chat system using React  + Socket.IO (client) , Node.js + Socket.IO (server)
+* Enabled dynamic room participation via `join-room`, `send-message`, and `leave-room` events
+* Managed in-memory user session data (`username`, `room`) without using a persistent database
+* Controlled room access using `socket.join(room)` and `socket.leave(room)`
+* Broadcasted structured `"receive-message"` events to synchronize room state across clients
+* Ensured that only room members receive relevant join/leave/message updates
+* On leave, reset client-side state to clear messages and return to Join UI
+* Focused on modular, event-driven flow across full-stack without server-side storage or auth
+
+### **Day 10**
 
 ---
 ##  Tech Stack

@@ -19,3 +19,11 @@ Execution order: sync code → microtasks → macrotasks
 Practical examples using setTimeout, Promises, and I/O
 
 payments
+
+get-users-in-room	Request list of active users in a room
+kick-user / ban-user	For admin/moderation controls
+room-data-update	To sync room status (e.g., user count, metadata)
+notification	To send alerts or system messages
+status-update	Useful for “online”, “away”, “busy” states
+
+throtling on paymnet so that multiple click cant cause error
