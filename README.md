@@ -115,39 +115,40 @@ This repository contains my daily learning logs, code implementations, and backe
 * Ensured that only room members receive relevant join/leave/message updates
 * On leave, reset client-side state to clear messages and return to Join UI
 * Focused on modular, event-driven flow across full-stack without server-side storage or auth
-
 ### **Day 10**
-
-
 
 #### **API Rate Limiting with express-rate-limit**
 
 * Integrated **`express-rate-limit`** middleware to protect public APIs
 * Logged blocked requests for analysis and server health monitoring
-* Applied globally and to specific routes for abuse prevention
+* Applied to routes for abuse prevention
 * Prevented brute-force attacks and server overload
 * Thoroughly tested using Postman by sending rapid repeated requests
 
 #### **Throttling Email Service to Prevent Spam**
 
 * Implemented **throttling logic** for bulk email sending
-* Controlled mail dispatch rate using delay/timer/queue
-* Ensured sending pattern stays within SMTP provider limits
-* Avoided domain blacklisting and improved email deliverability
-* Explained difference between **rate limiting** and **throttling**
-
+* Used p-throttle to control email send rate (1/sec)
+* Protected against SMTP rate limits and domain blacklisting
+* Improved bulk email reliability and compliance
+* Explained throttling vs rate limiting
 
 #### **Redis Caching for Mock API Responses**
 
 * Installed and ran **Redis using Docker** for local caching
-* Cached responses from a public mock API using Redis `SET` with TTL
+* Implemented Redis client in Node.js using `redis` package
+* Cached responses from a public mock API using Redis `SET`
 * Compared performance of:
 
-  * Direct API fetch
-  * Cached response fetch
-* Demonstrated use of **temporal locality** to optimize API performance
+  * Direct API fetch (on **cache miss**)
+  * Cached response fetch (on **cache hit**)
+* Demonstrated use of **temporal locality** to optimize repeated API access
+* Compared Two Cache Eviction Strategies:
 
-.
+  **TTL-based eviction**  Removes keys after a fixed duration using Redis `EXPIRE` command.
+
+  **LRU (Least Recently Used)**  Automatically evicts least-accessed keys when memory is full.
+  Requires setting `maxmemory` and `maxmemory-policy` in Redis configuration.
 
 ---
 ##  Tech Stack
