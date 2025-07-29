@@ -24,3 +24,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(3000, () => console.log('Server running on localhost:3000'));
+
+
+// Rate Limiting	Limit external incoming requests	Server APIs
+// Throttling	Limit internal execution rate	Email dispatch

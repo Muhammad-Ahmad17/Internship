@@ -118,6 +118,37 @@ This repository contains my daily learning logs, code implementations, and backe
 
 ### **Day 10**
 
+
+
+#### **API Rate Limiting with express-rate-limit**
+
+* Integrated **`express-rate-limit`** middleware to protect public APIs
+* Logged blocked requests for analysis and server health monitoring
+* Applied globally and to specific routes for abuse prevention
+* Prevented brute-force attacks and server overload
+* Thoroughly tested using Postman by sending rapid repeated requests
+
+#### **Throttling Email Service to Prevent Spam**
+
+* Implemented **throttling logic** for bulk email sending
+* Controlled mail dispatch rate using delay/timer/queue
+* Ensured sending pattern stays within SMTP provider limits
+* Avoided domain blacklisting and improved email deliverability
+* Explained difference between **rate limiting** and **throttling**
+
+
+#### **Redis Caching for Mock API Responses**
+
+* Installed and ran **Redis using Docker** for local caching
+* Cached responses from a public mock API using Redis `SET` with TTL
+* Compared performance of:
+
+  * Direct API fetch
+  * Cached response fetch
+* Demonstrated use of **temporal locality** to optimize API performance
+
+.
+
 ---
 ##  Tech Stack
 
