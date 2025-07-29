@@ -17,3 +17,5 @@ Call stack, task queue, microtask queue
 Execution order: sync code → microtasks → macrotasks
 
 Practical examples using setTimeout, Promises, and I/O
+
+payments

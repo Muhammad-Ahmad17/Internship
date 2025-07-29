@@ -1,0 +1,233 @@
+/* Root layout */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background-color: #ece5dd;
+}
+
+/* Join Page */
+.joinContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 2rem;
+  margin: 10vh auto;
+  max-width: 400px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+/* Chat Container */
+.chatContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 600px;
+  margin: auto;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #f4f7f9;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Header */
+.header {
+  background-color: #2c3e50;
+  color: white;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 10px 10px 0 0;
+}
+
+.roomTitle {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.leaveButton {
+  background-color: #e74c3c;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.leaveButton:hover {
+  background-color: #c0392b;
+}
+
+/* Messages Container */
+.messagesContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  /* Ensure no override on child alignment */
+  align-items: stretch; /* Default to stretch, letting children handle justify-content */
+}
+
+/* Message Styling */
+.messageWrapper {
+  display: flex;
+  margin-bottom: 0.5rem;
+  width: 100%; /* Ensure full width for flex alignment */
+}
+
+.messageWrapper.self {
+  justify-content: flex-end;
+}
+
+.messageWrapper.other {
+  justify-content: flex-start;
+}
+
+.messageWrapper.system {
+  justify-content: center; /* Reinforced centering */
+}
+
+.messageBubble {
+  max-width: 70%;
+  padding: 0.75rem 1rem;
+  border-radius: 20px;
+  font-size: 0.95rem;
+  word-break: break-word;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.messageWrapper.self .messageBubble {
+  background-color: #d1f0ff;
+  border-bottom-right-radius: 0;
+}
+
+.messageWrapper.other .messageBubble {
+  background-color: #ecf0f1;
+  border-bottom-left-radius: 0;
+}
+
+.messageWrapper.system .messageBubble {
+  background-color: transparent;
+  color: #7f8c8d;
+  font-style: italic;
+  box-shadow: none;
+  text-align: center;
+  max-width: 90%; /* Wider for better centering visibility */
+}
+
+.messageHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.25rem;
+}
+
+.username {
+  flex-shrink: 0;
+}
+
+.messageTime {
+  font-size: 0.75rem;
+  color: #7f8c8d;
+  flex-shrink: 0;
+}
+
+.messageText {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Input Styling */
+.inputRow {
+  display: flex;
+  gap: 0.5rem;
+  padding: 1rem;
+  background-color: #f0f0f0;
+}
+
+.input {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: all 0.2s ease-in-out;
+}
+
+.input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  outline: none;
+}
+
+.sendButton {
+  padding: 0.75rem 1.5rem;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.sendButton:hover {
+  background-color: #2980b9;
+}
+
+.joinButton {
+  padding: 12px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.joinButton:hover {
+  background-color: #2563eb;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.messageBubble {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Ensure container style */
+.container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+}
