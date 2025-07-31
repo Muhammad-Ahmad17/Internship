@@ -7,7 +7,7 @@ module.exports = (schema) => {
         return res.status(400).json({ errors: messages });
       }
   
-      next(); // continue to controller
+      next(); 
     };
   };
   
