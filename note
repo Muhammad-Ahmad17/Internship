@@ -32,3 +32,12 @@ Rate Limiting	Limit external incoming requests	Server APIs
 Throttling	Limit internal execution rate	Email dispatch
 
 lru using queue
+
+
+
+
+docker run -p 9092:9092 \
+-e KAFKA_ZOOKEEPER_CONNECT=192.168.100.111:2181 \
+-e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://192.168.100.111:9092 \
+-e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
+confluentinc/cp-kafka
