@@ -150,28 +150,138 @@ This repository contains my daily learning logs, code implementations, and backe
   **LRU (Least Recently Used)**  Automatically evicts least-accessed keys when memory is full.
   Requires setting `maxmemory` and `maxmemory-policy` in Redis configuration.
 
+
+### **Day 11: Unit testing**
+
+* Built a modular authentication system in `DAY_11/Authentication/`
+  * Organized code into `controllers/`, `models/`, `routes/`, `middlewares/`, `validators/`, and `config/`
+  * Implemented JWT authentication, input validation, and user controller logic
+  * Added unit tests in `tests/`
+
+### **Day 12: Modern Backend Components**
+
+* Explored backend architecture concepts in `DAY_12/modern-backend-components/`
+  * Wrote documentation for:
+    * Forward and Reverse Proxy scenarios
+    * Load Balancer and Reverse Proxy
+    * Message Broker and Message Queuing
+    * Rate Limiting
+    * Redis Caching
+  * Practiced writing technical documentation in Markdown
+
+### **Day 13: Kafka Messaging**
+
+* Built Kafka producer/consumer in `DAY_13/kafka/kafka-app/`
+  * Implemented producer, consumer, admin, and client modules
+  * Documented Kafka theory in `theory/Kafka_Ecommerce_Documentation.markdown`
+  * Added instructions for running Kafka locally in `run-kafka.md`
+
+### **Day 14–17: Linux & DevOps**
+
+* Practiced Linux commands and backend engineering in `DAY_14-15-16-17/Linux/`
+  * Explored concepts:
+    * Familiarized with Linux environment and explored devops introduction
+    * basic commands and shortcuts for terminal
+    * Ubuntu for Backend/DevOps
+
+
+### **Day 18–25: AWS Cloud Practitioner Preparation**
+
+* Studied AWS services in `DAY_18-19-20-21-22-23-24-25/AWSCloudPractitionerEssentials/`
+  * Organized notes by service: IAM, EC2, ELB, SQS, Lambda, ECS/EKS/ECR, Storage, CloudFormation, Databases, Networking, Security, Monitoring, Pricing, Architecture, Migration, AI/ML
+
+### **Day 24–26: NoSQL Databases**
+
+* Practiced DynamoDB in `DAY_24-25-26/dynamodb-node/`
+  * Wrote use cases and how-to guides
+* Explored MongoDB in `DAY_24-25-26/mongo-db/`
+  * Notes on basic, intermediate, advanced, and expert topics
+  * Aggregation and key concepts
+
+### **Day 27–31: AWS Cloud Projects**
+
+* Completed hands-on AWS projects in `DAY_27-28-29-30-31/aws-cloud-projects/`
+  * Project 1: Create a web server on EC2
+  * Project 2: Load Balanced Architecture
+  * Project 3: Broken Web App Challenge
+  * Project 4: Security Group & NACL Challenge
+  * Project 5: Serverless Cross-Region DR
+
+### **Day 35: CI/CD**
+
+* Set up CI/CD pipelines (folder: `DAY_35/ci-cd/`)
+  * Practiced GitHub Actions for automated build, test, and deployment
+  * Explored integration with AWS Elastic Beanstalk
+
+---
+
+> **Tip:** For details on each topic, refer to the respective day’s folder and Markdown documentation.
+
 ---
 ##  Tech Stack
 
-####  Languages
-- JavaScript
+#### **Languages**
 
-####  Backend
-- Node.js
-- Express.js
+* JavaScript 
 
-####  Database
-- MongoDB (Mongoose ODM)
+#### **Backend Framework**
 
-####  Tools & Libraries
-- **Authentication & Validation**: JWT, Bcrypt, Joi  
-- **Email**: Nodemailer  
-- **Real-time Communication**: Socket.IO  
-- **Task Scheduling**: node-cron
-- **Containerization**: Docker  
-- **File System**: Node.js `fs` module
+* Node.js
+* Express.js
 
+#### **Databases**
 
+* MongoDB (Mongoose ODM)
+* Redis (Caching)
+* DynamoDB (AWS NoSQL)
+
+#### **Messaging & Queues**
+
+* Kafka (Producer/Consumer Architecture)
+* SQS (AWS Simple Queue Service)
+
+#### **Authentication & Validation**
+
+* JWT (JSON Web Tokens)
+* Bcrypt (Password Hashing)
+* Joi (Input Validation)
+
+#### **Email & Scheduling**
+
+* Nodemailer (Transactional Emails)
+* node-cron (Automated Jobs)
+* p-throttle (Email Throttling)
+
+#### **Real-time Communication**
+
+* Socket.IO (Chat & Live Systems)
+
+#### **File System & Logging**
+
+* Node.js `fs` module (File Operations)
+* Winston / Custom Logger (Server Logs)
+
+#### **Containerization & DevOps**
+
+* Docker (Custom Images, Multi-Container Setup)
+* Docker Compose (Service Orchestration)
+* GitHub Actions (CI/CD Pipelines)
+
+#### **Caching & Performance**
+
+* Redis (Cache Optimization, TTL/LRU Strategies)
+* express-rate-limit (API Rate Limiting)
+
+#### **Cloud & Infrastructure**
+
+* AWS (EC2, S3, IAM, ECS, ECR, Lambda, CloudFormation, CloudWatch, RDS, Route53)
+* Load Balancing, Auto Scaling, and Serverless Architectures
+
+#### **Proxies & Architecture**
+
+* Nginx (Reverse Proxy / Load Balancer)
+* Message Brokers (Kafka, SQS)
+* Microservices & Event-driven Architecture
 ---
 
 ## Author
