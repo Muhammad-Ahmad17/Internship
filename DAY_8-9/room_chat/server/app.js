@@ -22,6 +22,8 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
     credentials: true,
   },
+  transports: ["websocket", "polling"],
+  allowEIO3: true,
 });
 
 io.on("connection", (socket) => {
@@ -75,3 +77,6 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
+// Export for Vercel
+module.exports = app;
