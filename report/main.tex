@@ -1,0 +1,214 @@
+% main.tex - Main LaTeX Document for Internship Report
+
+\input{preamble}
+
+\begin{document}
+
+% ============================================================================
+% TITLE PAGE
+% ============================================================================
+\begin{titlepage}
+    \centering
+    \vspace*{0.5cm}
+    
+    % University Logo
+    \includegraphics[width=3cm]{images/comsats_logo.png}
+    
+    \vspace{0.5cm}
+    
+    {\large \textbf{COMSATS University Islamabad} \\
+    \textbf{Department of Computer Engineering}}
+    
+    \vspace{3cm}
+    
+    {\Large \textbf{Internship Report}}
+    
+    \vspace{1.5cm}
+    
+    {\textbf{Backend Engineering Internship at Innovative Technology}}
+    
+    \vspace{2cm}
+    
+    \begin{tabular}{l l}
+        \textbf{Student Name:} & Muhammad Ahmad \\
+        \textbf{Student Reg No.:} & FA23-BCE-113 \\
+        & \\
+        \textbf{Organization:} & Innovative Technology, Riyadh, Saudi Arabia \\
+        \textbf{Duration:} & July 2025 -- August 2025 \\
+        \textbf{Internship Type:} & On-site \\
+        & \\
+        \textbf{Date of Submission:} & \today \\
+    \end{tabular}
+    
+    \vspace{4cm}
+    
+    \HRule
+    \vspace{2cm}
+    
+\end{titlepage}
+
+% ============================================================================
+% DECLARATION PAGE (Optional)
+% ============================================================================
+\chapter*{Declaration}
+\addcontentsline{toc}{chapter}{Declaration}
+
+I hereby declare that this internship report is my original work and has not been submitted before for any degree or diploma. The information presented is based on my genuine work experience and learning during the internship at Innovative Saudia from July to August 2025.
+
+\vspace{2cm}
+\noindent
+\rule{5cm}{0.4pt} \quad \today\\
+Muhammad Ahmad
+
+% ============================================================================
+% TABLE OF CONTENTS
+% ============================================================================
+\tableofcontents
+\newpage
+
+% ============================================================================
+% EXECUTIVE SUMMARY
+% ============================================================================
+\chapter*{Executive Summary}
+\addcontentsline{toc}{chapter}{Executive Summary}
+
+\input{sections/01_executive_summary}
+\newpage
+
+% ============================================================================
+% CHAPTER 1: INTRODUCTION
+% ============================================================================
+\chapter{Introduction}
+\input{sections/02_introduction}
+\newpage
+
+% ============================================================================
+% CHAPTER 2: ORGANIZATION OVERVIEW
+% ============================================================================
+\chapter{Overview of the Organization}
+\input{sections/03_organization}
+\newpage
+
+% ============================================================================
+% CHAPTER 3: INTERNSHIP ROLE DESCRIPTION
+% ============================================================================
+\chapter{Description of the Internship Role}
+\input{sections/04_role_description}
+\newpage
+
+% ============================================================================
+% CHAPTER 4: UN SDGs MAPPING
+% ============================================================================
+\chapter{UN SDGs Mapping and Analysis}
+\input{sections/05_sdg_analysis}
+\newpage
+
+% ============================================================================
+% CHAPTER 5: CONCLUSIONS AND RECOMMENDATIONS
+% ============================================================================
+\chapter{Conclusions and Recommendations}
+\input{sections/06_conclusions}
+\newpage
+
+% ============================================================================
+% APPENDICES
+% ============================================================================
+% APPENDICES
+% ============================================================================
+\appendix
+\chapter*{Appendix A: Source Code and Project Documentation}
+\addcontentsline{toc}{chapter}{Appendix A: Source Code and Project Documentation}
+
+\section{GitHub Repository}
+
+Complete source code, project implementations, and daily learning documentation
+for all internship projects are available in the GitHub repository:
+
+\vspace{0.5cm}
+
+\noindent\textbf{Repository URL:} \url{https://github.com/Muhammad-Ahmad17/Internship/}
+
+\vspace{0.5cm}
+
+The repository contains organized folders for each day and project, including:
+
+\begin{itemize}
+    \item \textbf{DAY\_1\&2/} - JavaScript fundamentals and advanced concepts
+    \item \textbf{DAY\_3/} - JWT Authentication and security implementation
+    \item \textbf{DAY\_5-6/} - Docker and containerization projects
+    \item \textbf{DAY\_7/} - Real-time messaging (Socket.IO, WhatsApp Bot)
+    \item \textbf{DAY\_8-9/} - Full-stack room-based chat application
+    \item \textbf{DAY\_10/} - Rate limiting, throttling, and Redis caching
+    \item \textbf{DAY\_11/} - Modular authentication system with unit tests
+    \item \textbf{DAY\_12/} - Backend components documentation
+    \item \textbf{DAY\_13/} - Kafka producer/consumer implementation
+    \item \textbf{DAY\_14-17/} - Linux and DevOps practices
+    \item \textbf{DAY\_18-25/} - AWS Cloud services and certification preparation
+    \item \textbf{DAY\_27-31/} - Hands-on AWS cloud projects
+    \item \textbf{DAY\_32/} - CI/CD pipeline with GitHub Actions and Elastic Beanstalk
+\end{itemize}
+
+The \textbf{README.md} file in the repository contains:
+\begin{itemize}
+    \item Detailed daily progress logs
+    \item Complete project implementations with source code
+    \item Technology stack documentation
+    \item Learning outcomes and key insights for each phase
+    \item Instructions for running and testing projects locally
+\end{itemize}
+
+\section{Company Information and Resources}
+
+\subsection{Innovative Technology Official Website}
+
+\begin{itemize}
+    \item \textbf{Main Website:} \url{https://www.innotech-sa.com}
+    \item \textbf{Software Products:} \url{https://www.innotech-sa.com/software.html}
+    \item \textbf{Services:} \url{https://www.innotech-sa.com/services.html}
+    \item \textbf{About Us:} \url{https://www.innotech-sa.com/about_us.html}
+\end{itemize}
+
+\subsection{Contact Information}
+
+\begin{itemize}
+    \item \textbf{Location:} Dabab Street, Al Murabba, Riyadh, Kingdom of Saudi Arabia
+    \item \textbf{Phone:} +966(11)4092216
+    \item \textbf{Fax:} +966(11)2766544
+    \item \textbf{P.O. Box:} 15142
+\end{itemize}
+
+\section{Technology Stack Summary}
+
+\begin{table}[h]
+    \centering
+    \begin{tabularx}{\textwidth}{|l|X|}
+        \hline
+        \textbf{Category} & \textbf{Technologies} \\
+        \hline
+        Backend Languages & Node.js (JavaScript), ASP.NET (.NET) \\
+        \hline
+        Scripting & JavaScript (Node.js), Python, Bash \\
+        \hline
+        Primary Databases & SQL Server (Relational), MongoDB (NoSQL) \\
+        \hline
+        Caching & Redis (TTL and LRU strategies) \\
+        \hline
+        Cloud Infrastructure & AWS (EC2, RDS, S3, Lambda, CloudFormation) \\
+        \hline
+        On-Premises & Dedicated servers and data centers \\
+        \hline
+        Containerization & Docker, Docker Compose \\
+        \hline
+        CI/CD & GitHub Actions, Elastic Beanstalk \\
+        \hline
+        Real-Time & Socket.IO, WebSockets \\
+        \hline
+        Message Queuing & Kafka, AWS SQS \\
+        \hline
+        API Architecture & REST APIs, Microservices \\
+        \hline
+    \end{tabularx}
+    \caption{Innovative Technology Technology Stack}
+\end{table}
+
+\end{document}

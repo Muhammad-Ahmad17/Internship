@@ -1,0 +1,306 @@
+% AWS Cloud Architecture and Serverless Implementation
+
+\section{Lambda Function and API Gateway Integration}
+
+\subsection{Serverless Static Website Architecture}
+
+The internship cloud projects demonstrate a modern serverless stack:
+
+\begin{itemize}
+    \item \textbf{Frontend:} React Static Website (built and deployed to S3)
+    \item \textbf{API:} AWS API Gateway (REST endpoints)
+    \item \textbf{Backend:} Lambda Function (Node.js runtime)
+    \item \textbf{Database:} DynamoDB (NoSQL document store)
+    \item \textbf{Deployment:} CI/CD pipeline using GitHub Actions and Elastic Beanstalk
+\end{itemize}
+
+\subsection{Lambda Function for DynamoDB Record Retrieval}
+
+\begin{lstlisting}[language=JavaScript, caption=Lambda Handler for GET Records]
+const AWS = require('aws-sdk');
+const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+/**
+ * Lambda handler to retrieve records from DynamoDB
+ * Triggered by API Gateway GET request
+ */
+exports.handler = async (event) => {
+  console.log('Received event:', event);
+
+  try {
+    // Extract table name and optional filter from event
+    const tableName = process.env.DYNAMODB_TABLE || 'Records';
+    const queryParams = event.queryStringParameters || {};
+
+    let params = {
+      TableName: tableName
+    };
+
+    // Add optional KeyConditionExpression if querying by partition key
+    if (queryParams.id) {
+      params.KeyConditionExpression = 'id = :id';
+      params.ExpressionAttributeValues = {
+        ':id': queryParams.id
+      };
+    } else {
+      // Default: Scan all items with optional filter
+      if (queryParams.filter) {
+        params.FilterExpression = `#status = :status`;
+        params.ExpressionAttributeNames = {
+          '#status': 'status'
+        };
+        params.ExpressionAttributeValues = {
+          ':status': queryParams.filter
+        };
+      }
+    }
+
+    // Add pagination
+    if (queryParams.limit) {
+      params.Limit = parseInt(queryParams.limit, 10);
+    }
+
+    // Execute DynamoDB query/scan
+    const result = await dynamodb.query(params).promise()
+      .catch(() => dynamodb.scan(params).promise());
+
+    return {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({
+        success: true,
+        count: result.Items.length,
+        items: result.Items,
+        lastEvaluatedKey: result.LastEvaluatedKey
+      })
+    };
+
+  } catch (error) {
+    console.error('Error retrieving records:', error);
+
+    return {
+      statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({
+        success: false,
+        message: 'Failed to retrieve records',
+        error: error.message
+      })
+    };
+  }
+};
+\end{lstlisting}
+
+\subsection{API Gateway Integration Configuration}
+
+\begin{lstlisting}[language=json, caption=API Gateway REST API Setup]
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Internship Records API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/records": {
+      "get": {
+        "summary": "Retrieve records from DynamoDB",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "Record ID",
+            "type": "string"
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "description": "Filter by status",
+            "type": "string"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Maximum records to return",
+            "type": "integer"
+          }
+        ],
+        "x-amazon-apigateway-integration": {
+          "type": "aws_proxy",
+          "httpMethod": "POST",
+          "uri": "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:ACCOUNT_ID:function:GetRecords/invocations",
+          "responses": {
+            "default": {
+              "statusCode": "200"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+\end{lstlisting}
+
+\section{CI/CD Pipeline with Elastic Beanstalk}
+
+\subsection{GitHub Actions Automated Workflow}
+
+\begin{lstlisting}[language=yaml, caption=GitHub Actions CI/CD Pipeline]
+name: Deploy to Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      # Checkout code
+      - uses: actions/checkout@v3
+
+      # Setup Node.js
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Run linting
+      - name: Run ESLint
+        run: npm run lint --if-present
+
+      # Run tests
+      - name: Run tests
+        run: npm test --if-present
+
+      # Build application
+      - name: Build application
+        run: npm run build --if-present
+
+      # Build React frontend (if applicable)
+      - name: Build React app
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+        continue-on-error: true
+
+  deploy:
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # Configure AWS credentials
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # Install EB CLI
+      - name: Install Elastic Beanstalk CLI
+        run: |
+          python -m pip install --upgrade pip
+          pip install awsebcli
+
+      # Deploy to Elastic Beanstalk
+      - name: Deploy to Elastic Beanstalk
+        run: |
+          eb init -p "Node.js 18 running on 64bit Amazon Linux 2" \
+            --region us-east-1 \
+            --application-name internship-app
+          eb create internship-env --instance-type t3.micro || \
+          eb deploy internship-env
+
+      # Verify deployment
+      - name: Verify deployment
+        run: |
+          HEALTH=$(eb health --refresh | grep "Overall Health")
+          echo "$HEALTH"
+
+      # Send deployment notification
+      - name: Notify deployment
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Deployment ${{ job.status }} at ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        continue-on-error: true
+\end{lstlisting}
+
+\subsection{Elastic Beanstalk Configuration}
+
+\begin{lstlisting}[language=yaml, caption=.ebextensions/app.config]
+option_settings:
+  # Application settings
+  aws:elasticbeanstalk:application:environment:
+    NODE_ENV: production
+    LOG_LEVEL: info
+    DYNAMODB_TABLE: InternshipRecords
+  
+  # Auto-scaling configuration
+  aws:autoscaling:asg:
+    MinSize: 1
+    MaxSize: 4
+  
+  aws:autoscaling:trigger:
+    MeasureName: CPUUtilization
+    Statistic: Average
+    Unit: Percent
+    UpperThreshold: 70
+    LowerThreshold: 30
+  
+  # Load balancer settings
+  aws:elasticbeanstalk:environment:process:default:
+    HealthCheckPath: /health
+    HealthyThresholdCount: 3
+    UnhealthyThresholdCount: 5
+  
+  # Environment
+  aws:elasticbeanstalk:cloudwatch:logs:
+    StreamLogs: true
+    DeleteOnTerminate: false
+
+files:
+  "/opt/elasticbeanstalk/tasks/bundlelogs.d/01_application.conf":
+    content: |
+      /var/app/current/logs/*.log
+      /var/app/current/*.log
+
+commands:
+  01_npm_install:
+    command: "npm ci --production"
+    cwd: /var/app/staging/
+  02_npm_build:
+    command: "npm run build --if-present"
+    cwd: /var/app/staging/
+\end{lstlisting}
+
+\newpage

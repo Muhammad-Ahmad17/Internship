@@ -1,0 +1,16 @@
+{
+  "name": "dynamodb-node",
+  "version": "1.0.0",
+  "description": "this is a practical code documentaion of how to use dynamodb, a pre-req to start with a dynamodb project",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js",
+    "dynamodb": "docker run -p 8000:8000 amazon/dynamodb-local"
+  },
+  "author": "muhammad-ahmad",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.873.0",
+    "@aws-sdk/lib-dynamodb": "^3.873.0"
+  }
+}

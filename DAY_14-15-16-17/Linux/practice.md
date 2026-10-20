@@ -16,7 +16,7 @@ method to install linux
 linux file system
     manages the directory organizations
     like if we 
-        add user it aotometically add in /home/new-user
+        add user it autometically add in /home/new-user
         install software it add in /etc/nginx
 
 linux file hierarcy
@@ -83,6 +83,5 @@ dig doaminname
 
 
 public ip of machine 
-
 curl ifconfig.me
 

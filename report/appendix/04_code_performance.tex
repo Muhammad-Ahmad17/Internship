@@ -1,0 +1,198 @@
+% Caching, Performance, and Optimization
+
+\section{Redis Caching Strategy}
+
+\subsection{Cache Implementation with TTL and LRU}
+
+\begin{lstlisting}[language=JavaScript, caption=Redis Cache with Expiration]
+const redis = require('redis');
+
+const cacheClient = redis.createClient({
+  host: 'localhost',
+  port: 6379,
+  retry_strategy: (opts) => {
+    if (opts.total_retry_time > 1000 * 60 * 60) {
+      return new Error('Retry time exhausted');
+    }
+    return Math.min(opts.attempt * 100, 3000);
+  }
+});
+
+/**
+ * Generic cache wrapper
+ * @param {string} key - Cache key
+ * @param {function} fetchFunction - Function to fetch data if not cached
+ * @param {number} ttl - Time to live in seconds (default: 3600)
+ */
+const getCachedData = async (key, fetchFunction, ttl = 3600) => {
+  try {
+    // Check cache first
+    const cached = await cacheClient.get(key);
+    if (cached) {
+      console.log(`✓ Cache HIT for key: ${key}`);
+      return JSON.parse(cached);
+    }
+
+    console.log(`✗ Cache MISS for key: ${key}`);
+    
+    // Fetch fresh data
+    const data = await fetchFunction();
+    
+    // Store in cache with TTL
+    await cacheClient.setex(
+      key,
+      ttl,
+      JSON.stringify(data)
+    );
+    
+    return data;
+  } catch (error) {
+    console.error(`Cache error for key ${key}:`, error);
+    throw error;
+  }
+};
+
+// Usage example: Cache API responses
+const getUser = async (userId) => {
+  return getCachedData(
+    `user:${userId}`,
+    async () => {
+      const response = await fetch(\`/api/users/\${userId}\`);
+      return response.json();
+    },
+    3600  // Cache for 1 hour
+  );
+};
+\end{lstlisting}
+
+\subsection{Cache Invalidation Strategies}
+
+\begin{lstlisting}[language=JavaScript, caption=Cache Invalidation Patterns]
+// Pattern 1: Manual Invalidation
+const invalidateCache = async (key) => {
+  await cacheClient.del(key);
+  console.log(`Cache invalidated: ${key}`);
+};
+
+// Pattern 2: Cascade Invalidation
+const invalidateCascade = async (pattern) => {
+  const keys = await cacheClient.keys(pattern);
+  if (keys.length > 0) {
+    await cacheClient.del(...keys);
+    console.log(`Invalidated ${keys.length} keys matching: ${pattern}`);
+  }
+};
+
+// Pattern 3: Event-based Invalidation
+const handleUserUpdate = async (userId) => {
+  await invalidateCascade(`user:${userId}:*`);
+  await invalidateCascade(`users:list:*`);
+};
+
+// Pattern 4: Conditional Refresh
+const refreshIfStale = async (key, fetchFunction, maxAge = 300) => {
+  const ttl = await cacheClient.ttl(key);
+  
+  if (ttl <= 0) {
+    // Missing or expired
+    return getCachedData(key, fetchFunction);
+  } else if (ttl < maxAge) {
+    // Refresh in background
+    getCachedData(key, fetchFunction).catch(err => 
+      console.error('Background refresh failed:', err)
+    );
+  }
+  
+  const cached = await cacheClient.get(key);
+  return JSON.parse(cached);
+};
+\end{lstlisting}
+
+\section{Rate Limiting and API Protection}
+
+\subsection{Express Rate Limiting Middleware}
+
+\begin{lstlisting}[language=JavaScript, caption=API Rate Limiting]
+const rateLimit = require('express-rate-limit');
+const RedisStore = require('rate-limit-redis');
+
+// Create Redis store for distributed rate limiting
+const redisStore = new RedisStore({
+  client: cacheClient,
+  prefix: 'rl:'
+});
+
+// General API limiter
+const apiLimiter = rateLimit({
+  store: redisStore,
+  windowMs: 15 * 60 * 1000,  // 15 minutes
+  max: 100,  // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP',
+  standardHeaders: true,  // Send rate limit info in headers
+  legacyHeaders: false
+});
+
+// Strict limiter for auth endpoints
+const authLimiter = rateLimit({
+  store: redisStore,
+  windowMs: 15 * 60 * 1000,
+  max: 5,  // 5 attempts
+  skipSuccessfulRequests: true  // Don't count successful requests
+});
+
+// Apply limiters to routes
+app.use('/api/', apiLimiter);
+app.post('/auth/login', authLimiter, loginController);
+app.post('/auth/register', authLimiter, registerController);
+\end{lstlisting}
+
+\subsection{Request Throttling for Email Service}
+
+\begin{lstlisting}[language=JavaScript, caption=Email Throttling]
+const pThrottle = require('p-throttle');
+const nodemailer = require('nodemailer');
+
+// Throttle to 1 email per second
+const emailThrottle = pThrottle({
+  limit: 1,
+  interval: 1000
+});
+
+const mailer = nodemailer.createTransporter({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+const sendThrottledEmail = emailThrottle(async (to, subject, html) => {
+  try {
+    const info = await mailer.sendMail({
+      from: process.env.EMAIL_USER,
+      to,
+      subject,
+      html
+    });
+    console.log('Email sent:', info.messageId);
+    return info;
+  } catch (error) {
+    console.error('Failed to send email:', error);
+    throw error;
+  }
+});
+
+// Usage: Send bulk emails safely
+const sendBulkEmails = async (recipients) => {
+  const promises = recipients.map(recipient =>
+    sendThrottledEmail(
+      recipient.email,
+      'Newsletter',
+      '<h1>Welcome</h1>'
+    )
+  );
+  return Promise.all(promises);
+};
+\end{lstlisting}
+
+\newpage

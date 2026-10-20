@@ -1,0 +1,234 @@
+% Database Design and ACID Transactions
+
+\section{MongoDB Transactions and Data Consistency}
+
+\subsection{ACID Transaction for Financial Operations}
+
+\begin{lstlisting}[language=JavaScript, caption=MongoDB Multi-Document Transaction]
+const mongoose = require('mongoose');
+const User = require('./models/User');
+const Transaction = require('./models/Transaction');
+
+/**
+ * Perform a financial transfer with ACID guarantees
+ * Ensures atomicity: either all operations succeed or all fail
+ */
+const performMoneyTransfer = async (fromUserId, toUserId, amount) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    // Step 1: Deduct from sender's account
+    await User.updateOne(
+      { _id: fromUserId },
+      { $inc: { balance: -amount } },
+      { session }
+    );
+
+    // Step 2: Verify sender has sufficient funds
+    const sender = await User.findById(fromUserId).session(session);
+    if (sender.balance < 0) {
+      throw new Error('Insufficient funds');
+    }
+
+    // Step 3: Add to receiver's account
+    await User.updateOne(
+      { _id: toUserId },
+      { $inc: { balance: amount } },
+      { session }
+    );
+
+    // Step 4: Create transaction record
+    await Transaction.create([{
+      from: fromUserId,
+      to: toUserId,
+      amount,
+      type: 'transfer',
+      status: 'completed',
+      timestamp: new Date(),
+      description: \`Transfer from \${fromUserId} to \${toUserId}\`
+    }], { session });
+
+    // Commit transaction
+    await session.commitTransaction();
+    console.log('Transaction completed successfully');
+
+    return {
+      success: true,
+      message: 'Transfer completed'
+    };
+
+  } catch (error) {
+    // Rollback on any error
+    await session.abortTransaction();
+    console.error('Transaction rolled back:', error.message);
+
+    return {
+      success: false,
+      message: error.message
+    };
+
+  } finally {
+    await session.endSession();
+  }
+};
+
+// Usage
+performMoneyTransfer(
+  '507f1f77bcf86cd799439011',
+  '507f1f77bcf86cd799439012',
+  100
+);
+\end{lstlisting}
+
+\subsection{Schema Design with Validation}
+
+\begin{lstlisting}[language=JavaScript, caption=MongoDB Schema with Built-in Validation]
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, 'Name is required'],
+      trim: true,
+      maxlength: [50, 'Name cannot exceed 50 characters']
+    },
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      unique: true,
+      lowercase: true,
+      match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 
+        'Please provide a valid email']
+    },
+    password: {
+      type: String,
+      required: [true, 'Password is required'],
+      minlength: [8, 'Password must be at least 8 characters'],
+      select: false  // Don't return password by default
+    },
+    balance: {
+      type: Number,
+      default: 0,
+      min: [0, 'Balance cannot be negative']
+    },
+    role: {
+      type: String,
+      enum: ['user', 'admin', 'moderator'],
+      default: 'user'
+    },
+    isActive: {
+      type: Boolean,
+      default: true
+    },
+    metadata: {
+      loginCount: { type: Number, default: 0 },
+      lastLogin: Date,
+      ipAddress: String
+    }
+  },
+  {
+    timestamps: true,  // Add createdAt and updatedAt
+    indexes: {
+      email: 1,
+      createdAt: -1
+    }
+  }
+);
+
+// Middleware: Hash password before saving
+userSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) return next();
+  
+  const bcrypt = require('bcrypt');
+  this.password = await bcrypt.hash(this.password, 10);
+  next();
+});
+
+module.exports = mongoose.model('User', userSchema);
+\end{lstlisting}
+
+\section{DynamoDB for Serverless Applications}
+
+\subsection{DynamoDB Table Design and Queries}
+
+\begin{lstlisting}[language=javascript, caption=DynamoDB Query Patterns]
+const AWS = require('aws-sdk');
+const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+const TABLE_NAME = 'InternshipRecords';
+
+/**
+ * Query records by partition key
+ */
+const getRecordById = async (recordId) => {
+  const params = {
+    TableName: TABLE_NAME,
+    Key: { id: recordId }
+  };
+
+  try {
+    const result = await dynamodb.get(params).promise();
+    return result.Item || null;
+  } catch (error) {
+    console.error('Query error:', error);
+    throw error;
+  }
+};
+
+/**
+ * Query with sort key range
+ */
+const getRecordsByDateRange = async (userId, startDate, endDate) => {
+  const params = {
+    TableName: TABLE_NAME,
+    KeyConditionExpression: 'userId = :userId AND createdAt BETWEEN :start AND :end',
+    ExpressionAttributeValues: {
+      ':userId': userId,
+      ':start': startDate,
+      ':end': endDate
+    }
+  };
+
+  return dynamodb.query(params).promise();
+};
+
+/**
+ * Batch write operations
+ */
+const batchWriteRecords = async (records) => {
+  const params = {
+    RequestItems: {
+      [TABLE_NAME]: records.map(record => ({
+        PutRequest: {
+          Item: record
+        }
+      }))
+    }
+  };
+
+  return dynamodb.batchWrite(params).promise();
+};
+
+/**
+ * Scan with filter expression
+ */
+const scanActiveRecords = async (limit = 100) => {
+  const params = {
+    TableName: TABLE_NAME,
+    FilterExpression: '#status = :status',
+    ExpressionAttributeNames: {
+      '#status': 'status'  // Avoid reserved keyword
+    },
+    ExpressionAttributeValues: {
+      ':status': 'active'
+    },
+    Limit: limit
+  };
+
+  return dynamodb.scan(params).promise();
+};
+\end{lstlisting}
+
+\newpage

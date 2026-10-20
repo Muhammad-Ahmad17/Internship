@@ -1,0 +1,140 @@
+% Real-Time and Message-Driven Systems
+
+\section{Socket.IO Real-Time Chat Implementation}
+
+\subsection{Server-Side Event Handling}
+
+\begin{lstlisting}[language=JavaScript, caption=Socket.IO Server Setup]
+const io = require('socket.io')(3000, {
+  cors: { origin: "*" }
+});
+
+// Store active users
+const activeUsers = new Map();
+
+io.on('connection', (socket) => {
+  console.log(`New connection: ${socket.id}`);
+
+  // User joins a room
+  socket.on('join-room', ({ room, username }) => {
+    socket.join(room);
+    activeUsers.set(socket.id, {
+      username,
+      room,
+      joinedAt: new Date()
+    });
+
+    // Notify room members
+    io.to(room).emit('user-joined', {
+      username,
+      message: `${username} joined the room`,
+      userCount: io.sockets.adapter.rooms.get(room).size
+    });
+  });
+
+  // User sends a message
+  socket.on('send-message', ({ message, room }) => {
+    io.to(room).emit('receive-message', {
+      username: activeUsers.get(socket.id).username,
+      message,
+      timestamp: new Date(),
+      userId: socket.id
+    });
+  });
+
+  // User leaves room
+  socket.on('leave-room', ({ room }) => {
+    const user = activeUsers.get(socket.id);
+    socket.leave(room);
+
+    io.to(room).emit('user-left', {
+      username: user.username,
+      message: `${user.username} left the room`,
+      userCount: io.sockets.adapter.rooms.get(room)?.size || 0
+    });
+
+    activeUsers.delete(socket.id);
+  });
+
+  socket.on('disconnect', () => {
+    const user = activeUsers.get(socket.id);
+    if (user) {
+      io.to(user.room).emit('user-left', {
+        username: user.username,
+        message: `${user.username} disconnected`
+      });
+    }
+    activeUsers.delete(socket.id);
+    console.log(`Disconnected: ${socket.id}`);
+  });
+});
+\end{lstlisting}
+
+\section{Kafka Producer-Consumer Architecture}
+
+\subsection{Event Publishing and Consumption}
+
+\begin{lstlisting}[language=JavaScript, caption=Kafka Message Handling]
+const { Kafka, CompressionTypes } = require('kafkajs');
+
+const kafka = new Kafka({
+  clientId: 'internship-app',
+  brokers: ['localhost:9092']
+});
+
+// Producer Instance
+const producer = kafka.producer();
+
+const publishEvent = async (topic, message) => {
+  try {
+    await producer.connect();
+    
+    await producer.send({
+      topic,
+      messages: [{
+        key: JSON.stringify(message.id),
+        value: JSON.stringify(message),
+        headers: {
+          'correlation-id': Date.now().toString()
+        }
+      }],
+      compression: CompressionTypes.GZIP
+    });
+    
+    await producer.disconnect();
+  } catch (error) {
+    console.error('Publishing failed:', error);
+  }
+};
+
+// Consumer Instance
+const consumer = kafka.consumer({ groupId: 'internship-group' });
+
+const subscribeToEvents = async (topic, handler) => {
+  try {
+    await consumer.connect();
+    await consumer.subscribe({ 
+      topic, 
+      fromBeginning: true 
+    });
+
+    await consumer.run({
+      eachMessage: async ({ topic, partition, message }) => {
+        const data = JSON.parse(message.value.toString());
+        console.log(`Processing: ${JSON.stringify(data)}`);
+        await handler(data);
+      },
+    });
+  } catch (error) {
+    console.error('Consumer error:', error);
+  }
+};
+
+// Usage example: Order Processing Topic
+subscribeToEvents('orders', async (order) => {
+  console.log('Order received:', order);
+  // Process order asynchronously
+});
+\end{lstlisting}
+
+\newpage

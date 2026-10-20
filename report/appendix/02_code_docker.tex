@@ -1,0 +1,114 @@
+% Docker and Containerization Examples
+
+\section{Docker and Multi-Container Configuration}
+
+\subsection{Dockerfile for Node.js Application}
+
+\begin{lstlisting}[language=dockerfile, caption=Production-Grade Dockerfile]
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy application code
+COPY . .
+
+# Expose application port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s \
+  CMD node -e "require('http').get('http://localhost:3000', \
+  (res) => { if (res.statusCode !== 200) throw new Error(res.statusCode) })"
+
+# Start application
+CMD ["node", "src/app.js"]
+\end{lstlisting}
+
+\subsection{Docker Compose for Multi-Service Setup}
+
+\begin{lstlisting}[language=yaml, caption=Complete Application Stack]
+version: '3.8'
+
+services:
+  # Node.js Backend Application
+  app:
+    build: .
+    container_name: internship-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/internship
+      - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+
+  # MongoDB Database
+  mongo:
+    image: mongo:7.0
+    container_name: internship-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo_data:/data/db
+      - mongo_config:/data/configdb
+    networks:
+      - app-network
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
+
+  # Mongo Express (Database GUI)
+  mongo-express:
+    image: mongo-express:latest
+    container_name: internship-mongo-express
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD}
+      ME_CONFIG_MONGODB_URL: mongodb://admin:${MONGO_PASSWORD}@mongo:27017/?authSource=admin
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # Redis Caching
+  redis:
+    image: redis:7-alpine
+    container_name: internship-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+volumes:
+  mongo_data:
+  mongo_config:
+  redis_data:
+
+networks:
+  app-network:
+    driver: bridge
+\end{lstlisting}
+
+\newpage
